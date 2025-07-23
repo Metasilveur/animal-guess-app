@@ -1,7 +1,28 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { Firestore } from '@google-cloud/firestore'
 
-const firestore = new Firestore()
+// Initialisation de Firestore avec les credentials base64
+const initFirestore = () => {
+  const base64Credentials = process.env.GCP_SERVICE_ACCOUNT_BASE64
+  
+  if (!base64Credentials) {
+    throw new Error('GCP_SERVICE_ACCOUNT_BASE64 environment variable is required')
+  }
+  
+  try {
+    // Décoder le base64 et parser le JSON
+    const credentialsJson = JSON.parse(Buffer.from(base64Credentials, 'base64').toString('utf-8'))
+    
+    return new Firestore({
+      credentials: credentialsJson,
+      projectId: credentialsJson.project_id
+    })
+  } catch (error) {
+    throw new Error(`Failed to parse credentials: ${error}`)
+  }
+}
+
+const firestore = initFirestore()
 
 export async function GET(request: NextRequest) {
   try {

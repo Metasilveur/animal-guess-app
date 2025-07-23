@@ -2,17 +2,18 @@ import { type NextRequest, NextResponse } from "next/server"
 import { Storage } from '@google-cloud/storage'
 
 const storage = new Storage()
-const bucketName = process.env.GOOGLE_CLOUD_STORAGE_BUCKET!
 
 export async function POST(request: NextRequest) {
   try {
-    const { fileName } = await request.json()
+    const { fileName, bucketName } = await request.json()
 
-    if (!fileName) {
-      return NextResponse.json({ error: "Missing fileName parameter" }, { status: 400 })
+    if (!fileName || !bucketName) {
+      return NextResponse.json({ error: "Missing fileName or bucketName parameter" }, { status: 400 })
     }
 
-    console.log('🔗 Génération URL signée pour:', fileName)
+    console.log('🔗 Génération URL signée pour:')
+    console.log('   - Fichier:', fileName)
+    console.log('   - Bucket:', bucketName)
 
     const bucket = storage.bucket(bucketName)
     const file = bucket.file(fileName)

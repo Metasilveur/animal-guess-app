@@ -2,14 +2,35 @@
 
 ## Variables d'environnement nécessaires
 
-Ajoutez ces variables à votre fichier `.env.local` :
+Ajoutez cette variable à votre fichier `.env.local` :
 
 ```bash
-# Google Cloud Configuration
-GOOGLE_CLOUD_PROJECT_ID=dev-moula
-GOOGLE_CLOUD_CLIENT_EMAIL=your-service-account@dev-moula.iam.gserviceaccount.com
-GOOGLE_CLOUD_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYourPrivateKeyHere\n-----END PRIVATE KEY-----"
+# Google Cloud Configuration (nouvelle méthode - plus sécurisée)
+GCP_SERVICE_ACCOUNT_BASE64=eyJ0eXBlIjoic2VydmljZV9hY2NvdW50IiwicHJvamVjdF9pZCI6InlvdXItcHJvamVjdC1pZCIsInByaXZhdGVfa2V5X2lkIjoiLi4uIn0=
+
+# Optionnel : pour Google Cloud Storage (si différent du projet principal)
 GOOGLE_CLOUD_STORAGE_BUCKET=your-bucket-name
+```
+
+### Comment générer GCP_SERVICE_ACCOUNT_BASE64 :
+
+1. Téléchargez votre fichier de clé de service JSON depuis la console GCP
+2. Encodez-le en base64 :
+   ```bash
+   # Sur macOS/Linux :
+   base64 -i path/to/your/service-account.json
+   
+   # Sur Windows :
+   certutil -encode path/to/your/service-account.json temp.txt && findstr /v /c:- temp.txt
+   ```
+3. Copiez la sortie base64 dans votre variable d'environnement
+
+### Ancienne méthode (obsolète) :
+```bash
+# ❌ Ces variables ne sont plus utilisées dans le code
+# GOOGLE_CLOUD_PROJECT_ID=dev-moula
+# GOOGLE_CLOUD_CLIENT_EMAIL=your-service-account@dev-moula.iam.gserviceaccount.com
+# GOOGLE_CLOUD_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYourPrivateKeyHere\n-----END PRIVATE KEY-----"
 ```
 
 ## Structure Firestore

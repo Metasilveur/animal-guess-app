@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from "next/server"
 import { Storage } from '@google-cloud/storage'
 
 const storage = new Storage()
-const bucketName = process.env.GOOGLE_CLOUD_STORAGE_BUCKET!
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,12 +15,16 @@ export async function POST(request: NextRequest) {
     console.log('   - Nom fichier original:', file?.name)
     console.log('   - Taille fichier:', file?.size)
     console.log('   - Type fichier:', file?.type)
-    console.log('   - Folder name:', folderName)
+    console.log('   - Folder name (utilisé comme bucket):', folderName)
 
     if (!file || !folderName) {
       console.log('❌ Erreur: Fichier ou folder name manquant')
       return NextResponse.json({ error: "Missing file or folder name" }, { status: 400 })
     }
+
+    // Utiliser le folderName (nom saisi par l'utilisateur) comme nom de bucket
+    const bucketName = folderName.toLowerCase().trim()
+    console.log('🪣 Nom du bucket utilisé:', bucketName)
 
     // Upload vers Google Cloud Storage
     const bucket = storage.bucket(bucketName)

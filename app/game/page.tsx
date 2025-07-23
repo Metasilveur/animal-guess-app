@@ -226,7 +226,7 @@ export default function GamePage() {
 
           {/* History Section */}
           <div>
-            <UploadHistory uploads={gameState.uploads} />
+            <UploadHistory uploads={gameState.uploads} folderName={folderName} />
           </div>
         </div>
       </main>

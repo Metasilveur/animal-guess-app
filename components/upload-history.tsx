@@ -4,7 +4,7 @@ import { formatDistanceToNow } from "date-fns"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { ImageIcon, Loader2, Clock, CheckCircle } from "lucide-react"
+import { ImageIcon, Loader2, Clock, CheckCircle, Sparkles } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 
@@ -21,9 +21,10 @@ interface Upload {
 
 interface UploadHistoryProps {
   uploads: Upload[]
+  folderName: string
 }
 
-export default function UploadHistory({ uploads }: UploadHistoryProps) {
+export default function UploadHistory({ uploads, folderName }: UploadHistoryProps) {
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({})
 
   // Fonction pour obtenir une URL signée
@@ -31,10 +32,13 @@ export default function UploadHistory({ uploads }: UploadHistoryProps) {
     if (signedUrls[fileName]) return signedUrls[fileName]
 
     try {
+      // Utiliser le folderName comme bucket name (normalisé)
+      const bucketName = folderName.toLowerCase().trim()
+      
       const response = await fetch('/api/get-signed-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName })
+        body: JSON.stringify({ fileName, bucketName })
       })
 
       if (response.ok) {
@@ -49,10 +53,17 @@ export default function UploadHistory({ uploads }: UploadHistoryProps) {
   }
 
   const getSimilarityColor = (similarity: number) => {
-    if (similarity >= 80) return "bg-green-500"
+    if (similarity >= 80) return "bg-emerald-500"
     if (similarity >= 60) return "bg-blue-500"
-    if (similarity >= 40) return "bg-yellow-500"
+    if (similarity >= 40) return "bg-amber-500"
     return "bg-red-500"
+  }
+
+  const getSimilarityGradient = (similarity: number) => {
+    if (similarity >= 80) return "from-emerald-500/20 to-emerald-600/10"
+    if (similarity >= 60) return "from-blue-500/20 to-blue-600/10"
+    if (similarity >= 40) return "from-amber-500/20 to-amber-600/10"
+    return "from-red-500/20 to-red-600/10"
   }
 
   const getSimilarityLabel = (similarity: number) => {
@@ -86,111 +97,138 @@ export default function UploadHistory({ uploads }: UploadHistoryProps) {
           {uploads.map((upload, index) => (
             <Card 
               key={upload.id} 
-              className="bg-gray-800 border-gray-700 p-0 overflow-hidden hover:bg-gray-800/80 transition-all duration-200"
+              className={`p-0 overflow-hidden transition-all duration-300 ${
+                upload.status === 'processing' 
+                  ? 'bg-gray-800/50 border-gray-700/50' 
+                  : `bg-gradient-to-r ${getSimilarityGradient(upload.similarity || 0)} border-gray-700/70 hover:shadow-xl hover:border-gray-600/70`
+              }`}
             >
-              <div className="flex">
-                {/* Image section avec overlay de statut */}
-                <div className="relative w-20 h-20 flex-shrink-0">
-                  <ImageThumbnail 
-                    fileName={upload.fileName}
-                    fallbackName={upload.name}
-                    getSignedUrl={getSignedUrl}
-                  />
+              {upload.status === 'processing' ? (
+                // Animation sobre de chargement
+                <div className="p-6 flex flex-col items-center justify-center space-y-4">
+                  <div className="relative">
+                    {/* Animation de cercles concentriques */}
+                    <div className="w-12 h-12 relative">
+                      <div className="absolute inset-0 border-2 border-gray-600 rounded-full"></div>
+                      <div className="absolute inset-1 border-2 border-blue-500/50 rounded-full animate-spin border-t-blue-400"></div>
+                      <div className="absolute inset-3 border border-blue-400/30 rounded-full animate-pulse"></div>
+                    </div>
+                  </div>
                   
-                  {/* Numéro d'ordre */}
-                  <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm rounded-full w-6 h-6 flex items-center justify-center">
-                    <span className="text-xs font-bold text-white">{index + 1}</span>
+                  <div className="text-center space-y-2">
+                    <div className="flex items-center gap-2 justify-center">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+                    </div>
+                    <p className="text-sm text-gray-300 font-medium">Analyse en cours...</p>
+                    <p className="text-xs text-gray-500">Image #{index + 1} • {upload.name}</p>
+                  </div>
+                </div>
+              ) : (
+                // Carte complète une fois l'analyse terminée
+                <div className="flex">
+                  {/* Image section */}
+                  <div className="relative w-20 h-20 flex-shrink-0">
+                    <ImageThumbnail 
+                      fileName={upload.fileName}
+                      fallbackName={upload.name}
+                      getSignedUrl={getSignedUrl}
+                      isProcessing={false}
+                    />
+                    
+                    {/* Numéro d'ordre */}
+                    <div className="absolute top-2 left-2 rounded-full w-6 h-6 flex items-center justify-center bg-gradient-to-br from-blue-500/90 to-purple-500/90 backdrop-blur-sm shadow-lg">
+                      <span className="text-xs font-bold text-white">{index + 1}</span>
+                    </div>
+
+                    {/* Indicateur de statut */}
+                    <div className="absolute bottom-2 right-2">
+                      <div className="bg-gradient-to-r from-emerald-400 to-green-500 rounded-full p-1.5 shadow-lg">
+                        <CheckCircle className="w-3 h-3 text-white" />
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Indicateur de statut */}
-                  <div className="absolute bottom-2 right-2">
-                    {upload.status === 'processing' ? (
-                      <div className="bg-yellow-500 rounded-full p-1">
-                        <Loader2 className="w-3 h-3 text-white animate-spin" />
+                  {/* Contenu principal */}
+                  <div className="flex-1 p-4 min-w-0">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold truncate text-sm text-white">
+                          {upload.name}
+                        </h3>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Clock className="w-3 h-3 text-gray-500" />
+                          <p className="text-xs text-gray-500">
+                            {formatDistanceToNow(new Date(upload.timestamp), { addSuffix: true })}
+                          </p>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="bg-green-500 rounded-full p-1">
-                        <CheckCircle className="w-3 h-3 text-white" />
+                    </div>
+
+                    {/* Résultat de l'analyse */}
+                    {upload.similarity !== null && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-300 font-medium">
+                            {getSimilarityLabel(upload.similarity)}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className={`w-3 h-3 rounded-full ${getSimilarityColor(upload.similarity)} shadow-lg`}
+                            />
+                            <span className="text-sm font-bold text-white bg-gray-800/50 px-2 py-1 rounded-md">
+                              {upload.similarity}%
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Barre de progression */}
+                        <div className="w-full bg-gray-700/50 rounded-full h-2 overflow-hidden shadow-inner">
+                          <div
+                            className={`h-2 rounded-full transition-all duration-700 ease-out ${getSimilarityColor(upload.similarity)} shadow-sm`}
+                            style={{ width: `${upload.similarity}%` }}
+                          />
+                        </div>
+                        
+                        {upload.similarity >= 70 && (
+                          <div className="flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3 text-emerald-400" />
+                            <span className="text-xs text-emerald-300 font-medium">
+                              Très prometteuse !
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
                 </div>
-
-                {/* Contenu principal */}
-                <div className="flex-1 p-4 min-w-0">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-medium text-white truncate text-sm">
-                        {upload.name}
-                      </h3>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Clock className="w-3 h-3 text-gray-500" />
-                        <p className="text-xs text-gray-500">
-                          {formatDistanceToNow(new Date(upload.timestamp), { addSuffix: true })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Barre de progression ou score */}
-                  {upload.status === 'processing' ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-yellow-400 font-medium">
-                          Analyse en cours...
-                        </span>
-                        <span className="text-xs text-gray-500">65%</span>
-                      </div>
-                      <Progress value={65} className="h-1.5 bg-gray-700" />
-                      <p className="text-xs text-gray-500">
-                        Gemini AI traite votre image
-                      </p>
-                    </div>
-                  ) : upload.similarity !== null ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400">
-                          {getSimilarityLabel(upload.similarity)}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className={`w-2 h-2 rounded-full ${getSimilarityColor(upload.similarity)}`}
-                          />
-                          <span className="text-sm font-bold text-white">
-                            {upload.similarity}%
-                          </span>
-                        </div>
-                      </div>
-                      <div className="w-full bg-gray-700 rounded-full h-1.5">
-                        <div
-                          className={`h-1.5 rounded-full transition-all duration-500 ${getSimilarityColor(upload.similarity)}`}
-                          style={{ width: `${upload.similarity}%` }}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-gray-600" />
-                      <span className="text-xs text-gray-500">En attente d'analyse</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+              )}
             </Card>
           ))}
         </div>
       )}
 
       {uploads.length === 10 && (
-        <div className="mt-6 p-4 bg-green-900/20 rounded-xl border border-green-700/30">
+        <div className="mt-6 p-4 bg-gradient-to-r from-emerald-900/30 to-green-900/20 rounded-xl border border-emerald-700/40 shadow-lg">
           <div className="flex items-center justify-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-400" />
-            <p className="text-green-300 font-medium text-center">
+            <CheckCircle className="w-5 h-5 text-emerald-400" />
+            <p className="text-emerald-300 font-medium text-center">
               Toutes les images uploadées ! Il est temps de deviner l'animal mystère.
             </p>
           </div>
         </div>
       )}
+      
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
+      `}</style>
     </div>
   )
 }
@@ -199,11 +237,13 @@ export default function UploadHistory({ uploads }: UploadHistoryProps) {
 function ImageThumbnail({ 
   fileName, 
   fallbackName, 
-  getSignedUrl 
+  getSignedUrl,
+  isProcessing = false
 }: { 
   fileName: string
   fallbackName: string
   getSignedUrl: (fileName: string) => Promise<string | null>
+  isProcessing?: boolean
 }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -234,28 +274,47 @@ function ImageThumbnail({
 
   if (isLoading) {
     return (
-      <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+      <div className={`w-full h-full flex items-center justify-center ${
+        isProcessing 
+          ? 'bg-gradient-to-br from-gray-700 to-gray-600 animate-pulse' 
+          : 'bg-gray-700'
+      }`}>
+        <Loader2 className={`w-6 h-6 animate-spin ${
+          isProcessing ? 'text-amber-400' : 'text-gray-500'
+        }`} />
       </div>
     )
   }
 
   if (hasError || !imageUrl) {
     return (
-      <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+      <div className={`w-full h-full flex items-center justify-center ${
+        isProcessing 
+          ? 'bg-gradient-to-br from-gray-700 to-gray-600' 
+          : 'bg-gray-700'
+      }`}>
         <ImageIcon className="w-8 h-8 text-gray-500" />
       </div>
     )
   }
 
   return (
-    <Image
-      src={imageUrl}
-      alt={fallbackName}
-      fill
-      className="object-cover"
-      sizes="80px"
-      onError={() => setHasError(true)}
-    />
+    <div className="relative w-full h-full">
+      <Image
+        src={imageUrl}
+        alt={fallbackName}
+        fill
+        className={`object-cover transition-all duration-300 ${
+          isProcessing 
+            ? 'filter brightness-75 contrast-90 saturate-50' 
+            : 'filter brightness-100 contrast-100 saturate-100'
+        }`}
+        sizes="80px"
+        onError={() => setHasError(true)}
+      />
+      {isProcessing && (
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent animate-shimmer" />
+      )}
+    </div>
   )
 }
