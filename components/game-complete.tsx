@@ -8,9 +8,12 @@ import { Trophy, RotateCcw, LogOut, Target } from "lucide-react"
 interface Upload {
   id: string
   name: string
-  similarity: number
+  fileName: string
+  gcpUri: string
+  similarity: number | null
   timestamp: Date
   imageUrl: string
+  status: 'processing' | 'completed'
 }
 
 interface GameCompleteProps {
@@ -31,9 +34,9 @@ export default function GameComplete({
   onLogout,
 }: GameCompleteProps) {
   const averageScore =
-    uploads.length > 0 ? Math.round(uploads.reduce((sum, upload) => sum + upload.similarity, 0) / uploads.length) : 0
+    uploads.length > 0 ? Math.round(uploads.reduce((sum, upload) => sum + (upload.similarity || 0), 0) / uploads.length) : 0
 
-  const bestScore = uploads.length > 0 ? Math.max(...uploads.map((upload) => upload.similarity)) : 0
+  const bestScore = uploads.length > 0 ? Math.max(...uploads.map((upload) => upload.similarity || 0)) : 0
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
@@ -89,7 +92,7 @@ export default function GameComplete({
 
           <div className="space-y-3">
             {uploads
-              .sort((a, b) => b.similarity - a.similarity)
+              .sort((a, b) => (b.similarity || 0) - (a.similarity || 0))
               .slice(0, 3)
               .map((upload, index) => (
                 <div key={upload.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
@@ -99,23 +102,25 @@ export default function GameComplete({
                     </Badge>
                     <span className="text-white truncate">{upload.name}</span>
                   </div>
-                  <Badge className="bg-gray-200 text-black">{upload.similarity}%</Badge>
+                  <Badge className="bg-gray-200 text-black">{upload.similarity || 0}%</Badge>
                 </div>
               ))}
           </div>
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex space-x-4">
-          <Button onClick={onRestart} className="flex-1 bg-white text-black hover:bg-gray-200 h-12 text-lg font-medium">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button
+            onClick={onRestart}
+            className="flex-1 bg-white text-black hover:bg-gray-200 h-12 text-lg font-medium"
+          >
             <RotateCcw className="mr-2 h-5 w-5" />
             Play Again
           </Button>
-
           <Button
             onClick={onLogout}
             variant="outline"
-            className="border-gray-700 text-gray-300 hover:bg-gray-800 h-12 px-8 bg-transparent"
+            className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent h-12 text-lg font-medium"
           >
             <LogOut className="mr-2 h-5 w-5" />
             Logout

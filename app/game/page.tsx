@@ -8,13 +8,17 @@ import GuessSection from "@/components/guess-section"
 import GameComplete from "@/components/game-complete"
 import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
+import { usePolling } from "@/hooks/usePolling"
 
 interface Upload {
   id: string
   name: string
-  similarity: number
+  fileName: string
+  gcpUri: string
+  similarity: number | null
   timestamp: Date
   imageUrl: string
+  status: 'processing' | 'completed'
 }
 
 interface GameState {
@@ -37,6 +41,7 @@ export default function GamePage() {
     mysteryImageUrl: "",
   })
   const [isLoading, setIsLoading] = useState(true)
+  const [hasProcessingUploads, setHasProcessingUploads] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -62,6 +67,45 @@ export default function GamePage() {
       setIsLoading(false)
     }
   }
+
+  // Fonction pour mettre à jour les uploads avec les prédictions
+  const updateUploadsWithPredictions = (predictions: any[]) => {
+    setGameState((prev) => ({
+      ...prev,
+      uploads: prev.uploads.map(upload => {
+        // Chercher la prédiction correspondante par file_name
+        const prediction = predictions.find(p => p.file_name === upload.fileName)
+        if (prediction) {
+          return {
+            ...upload,
+            similarity: prediction.inference, // Le score AI devient la similarité
+            status: 'completed'
+          }
+        }
+        return upload
+      })
+    }))
+  }
+
+  // Vérifier s'il y a des uploads en cours de traitement
+  useEffect(() => {
+    const processing = gameState.uploads.some(upload => upload.status === 'processing')
+    setHasProcessingUploads(processing)
+  }, [gameState.uploads])
+
+  // Polling pour les prédictions
+  const { isPolling } = usePolling({
+    url: `/api/predictions?user=${folderName}&processingFiles=${gameState.uploads
+      .filter(upload => upload.status === 'processing')
+      .map(upload => upload.fileName)
+      .join(',')}`,
+    interval: 3000, // 3 secondes
+    enabled: hasProcessingUploads && folderName !== "",
+    onData: updateUploadsWithPredictions,
+    onError: (error) => {
+      console.error('Failed to fetch predictions:', error)
+    }
+  })
 
   const handleUploadComplete = (newUpload: Upload) => {
     setGameState((prev) => ({
@@ -140,7 +184,19 @@ export default function GamePage() {
         <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-white">Welcome, {folderName}</h1>
-            <p className="text-gray-400 mt-1">{gameState.uploads.length}/10 images uploaded</p>
+            <p className="text-gray-400 mt-1">
+              {gameState.uploads.length}/10 images uploaded
+              {isPolling && (
+                <span className="ml-2 text-muted-foreground inline-flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <div className="w-1 h-1 bg-primary rounded-full animate-pulse"></div>
+                    <div className="w-1 h-1 bg-primary rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                    <div className="w-1 h-1 bg-primary rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                  </div>
+                  <span className="text-sm">Analyse en cours</span>
+                </span>
+              )}
+            </p>
           </div>
           <Button
             onClick={handleLogout}

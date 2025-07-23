@@ -44,7 +44,12 @@ export default function UploadArea({ folderName, onUploadComplete, disabled }: U
         const data = await response.json()
 
         if (response.ok) {
-          onUploadComplete(data)
+          // L'upload est terminé, mais l'analyse est en cours
+          onUploadComplete({
+            ...data,
+            similarity: null, // Pas encore disponible
+            status: 'processing'
+          })
         } else {
           throw new Error(data.error || "Upload failed")
         }
@@ -85,7 +90,7 @@ export default function UploadArea({ folderName, onUploadComplete, disabled }: U
           <div className="space-y-4">
             <Loader2 className="h-12 w-12 text-white mx-auto animate-spin" />
             <div className="space-y-2">
-              <p className="text-white font-medium">Uploading and analyzing...</p>
+              <p className="text-white font-medium">Uploading to Google Cloud...</p>
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div
                   className="bg-white h-2 rounded-full transition-all duration-300"
