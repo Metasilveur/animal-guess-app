@@ -72,8 +72,8 @@ export async function GET(request: NextRequest) {
       guessesRemaining: userData?.guessesRemaining || 3,
       gameComplete: userData?.gameComplete || false,
       won: userData?.won || false,
-      mysteryAnimal: userData?.mysteryAnimal || "",
-      mysteryImageUrl: userData?.mysteryImageUrl || "",
+      mysteryAnimal: userData?.mysteryAnimal || "capybara", // ⚠️ CORRECTION: Cohérence avec submit-guess
+      mysteryImageUrl: userData?.mysteryImageUrl || "https://upload.wikimedia.org/wikipedia/commons/8/85/Capybara_portrait.jpg",
     }
 
     return NextResponse.json(gameState)

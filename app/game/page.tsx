@@ -115,6 +115,15 @@ export default function GamePage() {
   }
 
   const handleGuessSubmit = async (guess: string) => {
+    console.log('🎯 === DÉBUT HANDLEGUESSSUBMIT ===')
+    console.log('   - guess:', guess)
+    console.log('   - folderName:', folderName)
+    console.log('   - gameState avant:', {
+      gameComplete: gameState.gameComplete,
+      guessesRemaining: gameState.guessesRemaining,
+      won: gameState.won
+    })
+    
     try {
       const response = await fetch("/api/submit-guess", {
         method: "POST",
@@ -122,18 +131,49 @@ export default function GamePage() {
         body: JSON.stringify({ folderName, guess }),
       })
 
-      const data = await response.json()
+      console.log('📡 Response status:', response.status)
+      console.log('📡 Response ok:', response.ok)
 
-      setGameState((prev) => ({
-        ...prev,
-        guessesRemaining: data.guessesRemaining,
-        gameComplete: data.gameComplete,
-        won: data.won,
-        mysteryAnimal: data.mysteryAnimal,
-        mysteryImageUrl: data.mysteryImageUrl,
-      }))
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('❌ Erreur API:', errorData)
+        throw new Error(`API Error: ${response.status} - ${errorData.error || 'Unknown error'}`)
+      }
+
+      const data = await response.json()
+      
+      console.log('📊 Données reçues de l\'API:', data)
+
+      setGameState((prev) => {
+        const newState = {
+          ...prev,
+          guessesRemaining: data.guessesRemaining,
+          gameComplete: data.gameComplete,
+          won: data.won,
+          mysteryAnimal: data.mysteryAnimal,
+          mysteryImageUrl: data.mysteryImageUrl,
+        }
+        
+        console.log('🔄 Nouveau gameState:', {
+          gameComplete: newState.gameComplete,
+          guessesRemaining: newState.guessesRemaining,
+          won: newState.won,
+          mysteryAnimal: newState.mysteryAnimal
+        })
+        
+        return newState
+      })
+      
+      console.log('✅ === FIN HANDLEGUESSSUBMIT ===')
     } catch (error) {
+      console.error('❌ === ERREUR HANDLEGUESSSUBMIT ===')
       console.error("Failed to submit guess:", error)
+      console.error('Type d\'erreur:', error?.constructor?.name)
+      console.error('Message:', error instanceof Error ? error.message : String(error))
+      console.error('❌ === FIN ERREUR ===')
+      
+      // TODO: Ajouter une notification d'erreur à l'utilisateur
+      // Pour l'instant, on ne fait rien pour ne pas casser l'interface
     }
   }
 
@@ -183,7 +223,7 @@ export default function GamePage() {
       <header className="border-b border-gray-800 bg-gray-900">
         <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-white">Welcome, {folderName}</h1>
+            <h1 className="text-2xl font-bold text-white">Bonjour, {folderName}</h1>
             <p className="text-gray-400 mt-1">
               {gameState.uploads.length}/10 images uploaded
               {isPolling && (
