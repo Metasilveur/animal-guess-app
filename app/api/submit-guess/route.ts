@@ -89,7 +89,9 @@ export async function POST(request: NextRequest) {
     console.log('   - newGuessesRemaining:', newGuessesRemaining)
     console.log('   - gameComplete:', gameComplete)
 
-    // Mettre à jour l'état du jeu dans Firestore
+    // ⚠️ PROTOTYPAGE STATELESS : Écriture Firestore désactivée
+    // Pour un vrai jeu avec persistance, décommenter les lignes suivantes :
+    /*
     const updateData = {
       guessesRemaining: newGuessesRemaining,
       gameComplete,
@@ -100,6 +102,8 @@ export async function POST(request: NextRequest) {
     
     console.log('📝 Mise à jour Firestore:', updateData)
     await userRef.update(updateData)
+    */
+    console.log('⚠️ MODE STATELESS - Aucune écriture Firestore effectuée')
 
     const response = {
       guessesRemaining: newGuessesRemaining,
