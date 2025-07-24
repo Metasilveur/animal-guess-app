@@ -15,7 +15,8 @@ const initFirestore = () => {
     
     return new Firestore({
       credentials: credentialsJson,
-      projectId: credentialsJson.project_id
+      projectId: credentialsJson.project_id,
+      databaseId: "buir-smart-retail-tp" // <-- Ajoute cette ligne
     })
   } catch (error) {
     throw new Error(`Failed to parse credentials: ${error}`)
