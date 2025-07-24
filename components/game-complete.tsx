@@ -49,7 +49,7 @@ export default function GameComplete({
 
           <h1 className="text-4xl font-bold text-white mb-4">{won ? "Congratulations!" : "Game Over"}</h1>
 
-          <p className="text-xl text-gray-300 mb-2">The mystery animal was:</p>
+          <p className="text-xl text-gray-300 mb-2">L'animal mystère était :</p>
 
           <h2 className="text-3xl font-bold text-white capitalize mb-6">{mysteryAnimal}</h2>
         </div>
@@ -63,12 +63,12 @@ export default function GameComplete({
               className="w-full h-full object-cover"
             />
           </div>
-          <p className="text-center text-gray-400">This was the mystery animal you were trying to match!</p>
+          <p className="text-center text-gray-400">L'animal mystère était : </p>
         </Card>
 
         {/* Score Summary */}
         <Card className="bg-gray-900 border-gray-800 p-6 mb-8">
-          <h3 className="text-xl font-semibold text-white mb-4 text-center">Your Performance</h3>
+          <h3 className="text-xl font-semibold text-white mb-4 text-center">Statistique :</h3>
 
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
@@ -88,7 +88,7 @@ export default function GameComplete({
 
         {/* Top Matches */}
         <Card className="bg-gray-900 border-gray-800 p-6 mb-8">
-          <h3 className="text-lg font-semibold text-white mb-4">Your Best Matches</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">Best Matches</h3>
 
           <div className="space-y-3">
             {uploads

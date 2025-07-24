@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     const userData = userDoc.data()
-    const mysteryAnimal = userData?.mysteryAnimal || "imapala" // Valeur par défaut
+    const mysteryAnimal = userData?.mysteryAnimal || "fourmilier" // Valeur par défaut
     const currentGuesses = userData?.guessesRemaining || 3
 
     // Vérifier si la devinette est correcte
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       gameComplete,
       won: isCorrect,
       mysteryAnimal,
-      mysteryImageUrl: userData?.mysteryImageUrl || "/placeholder.svg?height=400&width=400",
+      mysteryImageUrl: userData?.mysteryImageUrl || "https://www.aquaportail.com/pictures2212/fourmilier-geant.jpg",
     })
   } catch (error) {
     console.error("Failed to submit guess:", error)

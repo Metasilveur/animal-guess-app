@@ -34,8 +34,8 @@ export default function GuessSection({ guessesRemaining, onGuessSubmit }: GuessS
         <div className="flex justify-center mb-4">
           <Brain className="h-16 w-16 text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Time to Guess!</h2>
-        <p className="text-gray-400">You've uploaded all 10 images. What's the mystery animal?</p>
+        <h2 className="text-2xl font-bold text-white mb-2">Faut deviner maintenant !</h2>
+        <p className="text-gray-400">Quel est l'animal mystère ?</p>
       </div>
 
       <div className="flex justify-center mb-6">
@@ -73,7 +73,7 @@ export default function GuessSection({ guessesRemaining, onGuessSubmit }: GuessS
 
       <div className="mt-6 p-4 bg-gray-800 rounded-xl">
         <p className="text-gray-300 text-sm text-center">
-          💡 Think about the images with the highest similarity scores
+          💡 Il faut rentrer un animal proche de l'animal mystère ;)
         </p>
       </div>
     </Card>

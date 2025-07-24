@@ -50,15 +50,15 @@ export default function LoginPage() {
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4 tracking-tight">Mystery Animal</h1>
-          <p className="text-gray-400 text-lg">Upload images and guess the secret animal</p>
+          <h1 className="text-4xl font-bold text-white mb-4 tracking-tight">Animalix</h1>
+          <p className="text-gray-400 text-lg">Télécharges des animaux et devines l'animal mystère</p>
         </div>
 
         <div className="bg-gray-900 rounded-2xl p-8 shadow-2xl border border-gray-800">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label htmlFor="folderName" className="text-white font-medium text-sm">
-                Enter your folder name
+                Entre ton nom de bucket
               </label>
               <Input
                 id="folderName"
@@ -95,7 +95,7 @@ export default function LoginPage() {
         </div>
 
         <div className="text-center mt-8">
-          <p className="text-gray-500 text-sm">Make sure you have the correct folder name from your instructor</p>
+          <p className="text-gray-500 text-sm">Le nom de login comprend le trigramme octo aussi !</p>
         </div>
       </div>
     </div>
